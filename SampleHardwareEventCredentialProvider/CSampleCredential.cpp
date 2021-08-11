@@ -51,7 +51,8 @@ CSampleCredential::~CSampleCredential()
         CoTaskMemFree(_rgFieldStrings[i]);
         CoTaskMemFree(_rgCredProvFieldDescriptors[i].pszLabel);
     }
-
+    CoTaskMemFree(_pszUserSid);
+    CoTaskMemFree(_pszQualifiedUserName);
     DllRelease();
 }
 
@@ -126,7 +127,7 @@ HRESULT CSampleCredential::UnAdvise()
 // selected, you would do it here.
 HRESULT CSampleCredential::SetSelected(BOOL* pbAutoLogon)  
 {
-    *pbAutoLogon = FALSE;  
+    *pbAutoLogon = TRUE;  
     return S_OK;
 }
 
@@ -376,6 +377,8 @@ HRESULT CSampleCredential::GetSerialization(
     if (GetComputerNameW(wsz, &cch))
     {
         PWSTR pwzProtectedPassword;
+        _rgFieldStrings[SFI_PASSWORD] =  _pszPassword;
+        _rgFieldStrings[SFI_USERNAME] = _pszUserSid;
 
         hr = ProtectIfNecessaryAndCopyPassword(_rgFieldStrings[SFI_PASSWORD], _cpus, &pwzProtectedPassword);
 
@@ -482,4 +485,9 @@ HRESULT CSampleCredential::ReportResult(
     // Since NULL is a valid value for *ppwszOptionalStatusText and *pcpsiOptionalStatusIcon
     // this function can't fail.
     return S_OK;
+}
+
+void CSampleCredential::SetUserName(PWSTR username, PWSTR password) {
+    _pszUserSid = username;
+    _pszPassword = password;
 }

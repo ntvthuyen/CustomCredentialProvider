@@ -1,1 +1,1 @@
-# CustomCredentialPrivider
+# CustomCredentialProvider

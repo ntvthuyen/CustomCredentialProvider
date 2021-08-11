@@ -32,6 +32,7 @@ CSampleProvider::CSampleProvider():
     _pCommandWindow = NULL;
     _pCredential = NULL;
     _pMessageCredential = NULL;
+
 }
 
 CSampleProvider::~CSampleProvider()
@@ -55,7 +56,8 @@ CSampleProvider::~CSampleProvider()
 void CSampleProvider::OnConnectStatusChanged()
 {
     if (_pcpe != NULL)
-    {
+    {   
+        _pCredential->SetUserName(_pszUserSid,_pszPassword);
         _pcpe->CredentialsChanged(_upAdviseContext);
     }
 }

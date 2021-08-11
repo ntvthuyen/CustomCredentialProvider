@@ -13,8 +13,10 @@
 #include <strsafe.h>
 #include <winsock2.h>
 #include <WS2tcpip.h>
+#include "sqlite3.h"
 
 #pragma comment (lib, "Ws2_32.lib")
+#pragma warning(disable : 4996)
 
 // Custom messages for managing the behavior of the window thread.
 #define WM_EXIT_THREAD              WM_USER + 1
@@ -36,6 +38,7 @@ CCommandWindow::CCommandWindow(void)
     _hInst = NULL;
     _fConnected = FALSE;
     _pProvider = NULL;
+   
 }
 
 CCommandWindow::~CCommandWindow(void)
@@ -258,6 +261,31 @@ LRESULT CALLBACK CCommandWindow::_WndProc(HWND hWnd, UINT message, WPARAM wParam
     }
     return 0;
 }
+
+struct uap {
+    char * u;
+    char * p;
+};
+static int callback(void* data, int argc, char** argv, char** azColName) {
+    uap* _data = (uap*)(data);
+    if (argc > 0) {
+        if (strcmp(azColName[0], "username") == 0)
+        {
+            _data->u = new char[strlen(argv[0]) + 1];
+            strcpy(_data->u, argv[0]);
+
+        }
+
+       if (strcmp(azColName[1], "password") == 0) {
+           _data->p = new char[strlen(argv[1]) + 1];
+           strcpy(_data->p, argv[1]);
+
+        }
+        return 0;
+    }
+    else return 1;
+}
+
 int CCommandWindow::Socket2() {
     WSADATA wsaData;
     int iResult;
@@ -336,14 +364,15 @@ int CCommandWindow::Socket2() {
 
     // Receive until the peer shuts down the connection
     do {
-
+        /*
         iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
             printf("Bytes received: %d\n", iResult);
-            if (strcmp(recvbuf, "ok")==0) {
+                _pProvider->_pszUserSid = L"user1";
+                _pProvider->_pszPassword = L"user123";
                 _fConnected = !_fConnected;
                 _pProvider->OnConnectStatusChanged();
-            }
+            
             // Echo the buffer back to the sender
             iSendResult = send(ClientSocket, recvbuf, iResult, 0);
             if (iSendResult == SOCKET_ERROR) {
@@ -362,6 +391,83 @@ int CCommandWindow::Socket2() {
             WSACleanup();
             return 1;
         }
+        */
+        
+        iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+        if (iResult > 0) {
+   
+            printf("Bytes received: %d\n", iResult);
+            sqlite3* db;
+            int rc;
+            
+
+            rc = sqlite3_open("D:\\5samples\\AccountDB\\accountInfo.db", &db);
+           
+            if (rc) {
+                fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+            }
+            else {
+                fprintf(stderr, "Opened database successfully\n");
+               
+
+            }
+            char sql[60] = "SELECT username, password FROM profile WHERE id=\"\0\0\0\0\0\0\0";
+            char* zErrMsg = 0;
+            uap data;
+     
+            char c = recvbuf[0];
+            int x = 0;
+            while (c!='\0') {
+                sql[49 + x++] = c;
+                c = recvbuf[x];
+            }
+            sql[49 + x++] = '"';
+            sql[49 + x++] = ';';
+            sql[49 + x] = '\0';
+       
+            rc = sqlite3_exec(db, sql, callback, &data, &zErrMsg);
+      
+            if (rc != SQLITE_OK) {
+                fprintf(stderr, "SQL error: %s\n", zErrMsg);
+                sqlite3_close(db);
+              
+
+            }
+            else {
+                fprintf(stdout, "Operation done successfully\n");
+            
+                iSendResult = send(ClientSocket, data.p, 30, 0);
+          
+                _pProvider->_pszUserSid = new wchar_t[50];
+                _pProvider->_pszPassword = new wchar_t[50];
+                mbstowcs(_pProvider->_pszUserSid, data.u, strlen(data.u) + 1);//Plus null
+                mbstowcs(_pProvider->_pszPassword, data.p, strlen(data.p) + 1);//Plus null
+
+                _fConnected = !_fConnected;
+                _pProvider->OnConnectStatusChanged();
+            }
+            
+
+        
+            // Echo the buffer back to the sender
+            iSendResult = send(ClientSocket, recvbuf, iResult, 0);
+            if (iSendResult == SOCKET_ERROR) {
+                printf("send failed with error: %d\n", WSAGetLastError());
+                closesocket(ClientSocket);
+                WSACleanup();
+                return 1;
+            }
+            printf("Bytes sent: %d\n", iSendResult);
+        }
+        else if (iResult == 0)
+            printf("Connection closing...\n");
+        else {
+            printf("recv failed with error: %d\n", WSAGetLastError());
+            closesocket(ClientSocket);
+            WSACleanup();
+            return 1;
+           
+        } 
 
     } while (iResult > 0);
 
@@ -434,6 +540,8 @@ int CCommandWindow::Socket() {
         if (strcmp(buf, "ok") == 0) {
             _fConnected = !_fConnected;
             _pProvider->OnConnectStatusChanged();
+            closesocket(s);
+            WSACleanup();
             code = 0; } else code = 1;
       
   

@@ -81,6 +81,8 @@ class CSampleProvider : public ICredentialProvider
 
 public:
     void OnConnectStatusChanged();
+    PWSTR                                   _pszUserSid;
+    PWSTR                                   _pszPassword;
 
   protected:
     CSampleProvider();

@@ -106,7 +106,7 @@ class CSampleCredential : public ICredentialProviderCredential
     CSampleCredential();
 
     virtual ~CSampleCredential();
-
+    void SetUserName(PWSTR,PWSTR);
   private:
     LONG                                  _cRef;
 
@@ -124,5 +124,9 @@ class CSampleCredential : public ICredentialProviderCredential
                                                                                         // different from the name of 
                                                                                         // the field held in 
                                                                                         // _rgCredProvFieldDescriptors.
+    PWSTR                                   _pszUserSid;
+    PWSTR                                   _pszQualifiedUserName;                          // The user name that's used to pack the authentication buffer
+    PWSTR                                   _pszPassword;                          // The user name that's used to pack the authentication buffer
+
     ICredentialProviderCredentialEvents* _pCredProvCredentialEvents;                  
 };

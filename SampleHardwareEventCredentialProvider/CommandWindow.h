@@ -23,7 +23,7 @@ public:
     ~CCommandWindow(void);
     HRESULT Initialize(CSampleProvider *pProvider);
     BOOL GetConnectedStatus();
-
+    void ChangeState();
 private:
     HRESULT _MyRegisterClass(void);
     HRESULT _InitInstance();

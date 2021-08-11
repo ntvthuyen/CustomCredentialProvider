@@ -96,6 +96,5 @@ private:
     CMessageCredential          *_pMessageCredential;   // Our "disconnected" credential.
     ICredentialProviderEvents   *_pcpe;                    // Used to tell our owner to re-enumerate credentials.
     UINT_PTR                    _upAdviseContext;       // Used to tell our owner who we are when asking to 
-                                                        // re-enumerate credentials.
     CREDENTIAL_PROVIDER_USAGE_SCENARIO      _cpus;
 };

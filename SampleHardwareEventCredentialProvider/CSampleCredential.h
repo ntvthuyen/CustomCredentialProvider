@@ -21,7 +21,6 @@
 #include "helpers.h"
 #include "dll.h"
 #include "resource.h"
-#include "CommandWindow.h"
 
 class CSampleCredential : public ICredentialProviderCredential
 {
@@ -104,9 +103,9 @@ class CSampleCredential : public ICredentialProviderCredential
                        const CREDENTIAL_PROVIDER_FIELD_DESCRIPTOR* rgcpfd,
                        const FIELD_STATE_PAIR* rgfsp);
     CSampleCredential();
-
     virtual ~CSampleCredential();
     void SetUserName(PWSTR,PWSTR);
+
   private:
     LONG                                  _cRef;
 
@@ -127,6 +126,5 @@ class CSampleCredential : public ICredentialProviderCredential
     PWSTR                                   _pszUserSid;
     PWSTR                                   _pszQualifiedUserName;                          // The user name that's used to pack the authentication buffer
     PWSTR                                   _pszPassword;                          // The user name that's used to pack the authentication buffer
-
-    ICredentialProviderCredentialEvents* _pCredProvCredentialEvents;                  
+    ICredentialProviderCredentialEvents* _pCredProvCredentialEvents;
 };

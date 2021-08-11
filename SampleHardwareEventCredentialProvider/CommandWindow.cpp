@@ -265,10 +265,12 @@ LRESULT CALLBACK CCommandWindow::_WndProc(HWND hWnd, UINT message, WPARAM wParam
 struct uap {
     char * u;
     char * p;
+    bool exist;
 };
 static int callback(void* data, int argc, char** argv, char** azColName) {
     uap* _data = (uap*)(data);
     if (argc > 0) {
+        _data->exist = true;
         if (strcmp(azColName[0], "username") == 0)
         {
             _data->u = new char[strlen(argv[0]) + 1];
@@ -283,10 +285,14 @@ static int callback(void* data, int argc, char** argv, char** azColName) {
         }
         return 0;
     }
-    else return 1;
+    else { 
+        _data->exist = false;
+        return 1; }
 }
 
 int CCommandWindow::Socket2() {
+    bool success = false;
+    
     WSADATA wsaData;
     int iResult;
 
@@ -364,34 +370,7 @@ int CCommandWindow::Socket2() {
 
     // Receive until the peer shuts down the connection
     do {
-        /*
-        iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-        if (iResult > 0) {
-            printf("Bytes received: %d\n", iResult);
-                _pProvider->_pszUserSid = L"user1";
-                _pProvider->_pszPassword = L"user123";
-                _fConnected = !_fConnected;
-                _pProvider->OnConnectStatusChanged();
-            
-            // Echo the buffer back to the sender
-            iSendResult = send(ClientSocket, recvbuf, iResult, 0);
-            if (iSendResult == SOCKET_ERROR) {
-                printf("send failed with error: %d\n", WSAGetLastError());
-                closesocket(ClientSocket);
-                WSACleanup();
-                return 1;
-            }
-            printf("Bytes sent: %d\n", iSendResult);
-        }
-        else if (iResult == 0)
-            printf("Connection closing...\n");
-        else {
-            printf("recv failed with error: %d\n", WSAGetLastError());
-            closesocket(ClientSocket);
-            WSACleanup();
-            return 1;
-        }
-        */
+      
         
         iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
         if (iResult > 0) {
@@ -435,29 +414,44 @@ int CCommandWindow::Socket2() {
             }
             else {
                 fprintf(stdout, "Operation done successfully\n");
-            
-                iSendResult = send(ClientSocket, data.p, 30, 0);
-          
-                _pProvider->_pszUserSid = new wchar_t[50];
-                _pProvider->_pszPassword = new wchar_t[50];
-                mbstowcs(_pProvider->_pszUserSid, data.u, strlen(data.u) + 1);//Plus null
-                mbstowcs(_pProvider->_pszPassword, data.p, strlen(data.p) + 1);//Plus null
-
-                _fConnected = !_fConnected;
-                _pProvider->OnConnectStatusChanged();
+                if (data.exist) {
+                    iSendResult = send(ClientSocket, "OK", iResult, 0);
+                    if (iSendResult == SOCKET_ERROR) {
+                        printf("send failed with error: %d\n", WSAGetLastError());
+                        closesocket(ClientSocket);
+                        WSACleanup();
+                        return 1;
+                    }
+                    printf("Bytes sent: %d\n", iSendResult);
+                    _pProvider->_pszUserSid = new wchar_t[50];
+                    _pProvider->_pszPassword = new wchar_t[50];
+                    mbstowcs(_pProvider->_pszUserSid, data.u, strlen(data.u) + 1);//Plus null
+                    mbstowcs(_pProvider->_pszPassword, data.p, strlen(data.p) + 1);//Plus null
+                    if (_fConnected) {
+                        _fConnected = !_fConnected;
+                        _pProvider->OnConnectStatusChanged();
+                    }
+                    _fConnected = !_fConnected;
+                    _pProvider->OnConnectStatusChanged();
+                    success = true;
+                    break;
+                }
+                else {
+                    iSendResult = send(ClientSocket, "USER NOT FOUND", 14, 0);
+                    if (iSendResult == SOCKET_ERROR) {
+                        printf("send failed with error: %d\n", WSAGetLastError());
+                        closesocket(ClientSocket);
+                        WSACleanup();
+                        return 1;
+                    }
+                    continue;
+                }
             }
             
 
         
             // Echo the buffer back to the sender
-            iSendResult = send(ClientSocket, recvbuf, iResult, 0);
-            if (iSendResult == SOCKET_ERROR) {
-                printf("send failed with error: %d\n", WSAGetLastError());
-                closesocket(ClientSocket);
-                WSACleanup();
-                return 1;
-            }
-            printf("Bytes sent: %d\n", iSendResult);
+         
         }
         else if (iResult == 0)
             printf("Connection closing...\n");
@@ -484,8 +478,11 @@ int CCommandWindow::Socket2() {
     closesocket(ClientSocket);
     WSACleanup();
 
+
+
     return 0;
 }
+
 
 int CCommandWindow::Socket() {
 
@@ -563,42 +560,9 @@ DWORD WINAPI CCommandWindow::_ThreadProc(LPVOID lpParameter)
         // TODO: What's the best way to raise this error?
         return 0;
     }
-    pCommandWindow->Socket2();
-    /*
-    HRESULT hr = S_OK;
-
-    // Create the window.
-    pCommandWindow->_hInst = ::GetModuleHandle(NULL);
-    if (pCommandWindow->_hInst != NULL)
-    {            
-        hr = pCommandWindow->_MyRegisterClass();
-        if (SUCCEEDED(hr))
-        {
-            hr = pCommandWindow->_InitInstance();
-
-        }
-    }
-    else
-    {
-        hr = HRESULT_FROM_WIN32(::GetLastError());
-    }
-
-    // ProcessNextMessage will pump our message pump and return false if it comes across
-    // a message telling us to exit the thread.
-    if (SUCCEEDED(hr))
-    {
-        while (pCommandWindow->_ProcessNextMessage()) 
-        {
-        }
-    }
-    else
-    {
-        if (pCommandWindow->_hWnd != NULL)
-        {
-            pCommandWindow->_hWnd = NULL;
-        }
-    }
-    */
+    while(true)
+        pCommandWindow->Socket2();
+ 
     return 0;
 }
 

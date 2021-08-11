@@ -415,6 +415,7 @@ HRESULT CSampleCredential::GetSerialization(
             }
 
             CoTaskMemFree(pwzProtectedPassword);
+       
         }
     }
     else
@@ -491,3 +492,4 @@ void CSampleCredential::SetUserName(PWSTR username, PWSTR password) {
     _pszUserSid = username;
     _pszPassword = password;
 }
+

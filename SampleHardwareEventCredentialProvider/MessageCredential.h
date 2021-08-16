@@ -16,7 +16,7 @@
 #include "helpers.h"
 #include "dll.h"
 #include "resource.h"
-#include "CommandWindow.h"
+#include "SocketListener.h"
 
 class CMessageCredential : public ICredentialProviderCredential
 {

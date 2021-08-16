@@ -6,7 +6,7 @@
 //
 // Copyright (c) 2006 Microsoft Corporation. All rights reserved.
 //
-// CCommandWindow provides a way to emulate external "connect" and "disconnect" 
+// SocketListener provides a way to emulate external "connect" and "disconnect" 
 // events, which are invoked via toggle button on a window. The window is launched
 // and managed on a separate thread, which is necessary to ensure it gets pumped.
 //
@@ -16,11 +16,11 @@
 #include <windows.h>
 #include "CSampleProvider.h"
 
-class CCommandWindow
+class SocketListener
 {
 public:
-    CCommandWindow(void);
-    ~CCommandWindow(void);
+    SocketListener(void);
+    ~SocketListener(void);
     HRESULT Initialize(CSampleProvider *pProvider);
     BOOL GetConnectedStatus();
     void ChangeState();

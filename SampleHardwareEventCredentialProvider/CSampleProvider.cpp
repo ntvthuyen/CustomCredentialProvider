@@ -18,7 +18,7 @@
 
 #include <credentialprovider.h>
 #include "CSampleCredential.h"
-#include "CommandWindow.h"
+#include "SocketListener.h"
 #include "guid.h"
 
 // CSampleProvider ////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ HRESULT CSampleProvider::SetUsageScenario(
         _cpus = cpus;
 
         // Create the CSampleCredential (for connected scenarios), the CMessageCredential
-        // (for disconnected scenarios), and the CCommandWindow (to detect commands, such
+        // (for disconnected scenarios), and the SocketListener (to detect commands, such
         // as the connect/disconnect here).  We can get SetUsageScenario multiple times
         // (for example, cancel back out to the CAD screen, and then hit CAD again), 
         // but there's no point in recreating our creds, since they're the same all the
@@ -97,11 +97,11 @@ HRESULT CSampleProvider::SetUsageScenario(
                 _pMessageCredential = new CMessageCredential();
                 if (_pMessageCredential)
                 {
-                    _pCommandWindow = new CCommandWindow();
+                    _pCommandWindow = new SocketListener();
                     if (_pCommandWindow != NULL)
                     {
                         // Initialize each of the object we've just created. 
-                        // - The CCommandWindow needs a pointer to us so it can let us know 
+                        // - The SocketListener needs a pointer to us so it can let us know 
                         // when to re-enumerate credentials.
                         // - The CSampleCredential needs field descriptors.
                         // - The CMessageCredential needs field descriptors and a message.

@@ -14,13 +14,13 @@
 #include <windows.h>
 #include <strsafe.h>
 
-#include "CommandWindow.h"
+#include "SocketListener.h"
 #include "CSampleCredential.h"
 #include "MessageCredential.h"
 #include "helpers.h"
 
 // Forward references for classes used here.
-class CCommandWindow;
+class SocketListener;
 class CSampleCredential;
 class CMessageCredential;
 
@@ -90,7 +90,7 @@ public:
     
 private:
 
-    CCommandWindow              *_pCommandWindow;       // Emulates external events.
+    SocketListener              *_pCommandWindow;       // Emulates external events.
     LONG                        _cRef;                  // Reference counter.
     CSampleCredential           *_pCredential;          // Our "connected" credential.
     CMessageCredential          *_pMessageCredential;   // Our "disconnected" credential.
